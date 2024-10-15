@@ -36,13 +36,19 @@ def log_operacao(func):
 @log_operacao
 def adicionar_livros(nome, genero, autor_nome, ano, valor):
     # Verifica se todos os dados são válidos antes de adicionar o livro
-    if not nome or not genero or not autor_nome or not ano or not valor:
-        print(f"Dados inválidos, tente novamente")
+    try:
+        ano = int(ano)
+        valor = float(valor)
+        if not nome or not genero or not autor_nome:
+            raise ValueError("Dados inválidos, tente novamente")
+    except ValueError as e:
+        print(f"Erro: {e}")
         return False
     else:
         # Adiciona o livro à lista de biblioteca
-        _biblioteca_livros.append(Livro(nome, genero, autor_nome, ano, valor))
-        print(f"Livro '{nome}' foi adicionado com sucesso")
+        novo_livro = Livro(nome, genero, autor_nome, ano, valor)
+        _biblioteca_livros.append(novo_livro)
+        print(f"Livro '{nome}' foi adicionado com sucesso, ID: {novo_livro.ID}")
         return True
 
 # Criando um gerador para listar os livros
@@ -50,8 +56,7 @@ def adicionar_livros(nome, genero, autor_nome, ano, valor):
 def listar_livros(biblioteca_livros):
     # Função geradora que retorna cada livro da biblioteca
     for livro in biblioteca_livros:
-        yield f"""\
-        
+        yield f"""
         Livro:  {livro.nome}
         Gênero: {livro.genero}
         Autor:  {livro.autor_nome}
@@ -72,6 +77,24 @@ def excluir_livro(livro_id):
     print(f"Livro com ID '{livro_id}' não encontrado.")
     return False
 
+# Função para buscar um livro pelo filtro (ID, nome, gênero, etc.)
+@log_operacao
+def buscar_livro_por_filtro(tipo_filtro, valor_filtro):
+    # Encontra o livro pelo filtro e retorna suas informações
+    for livro in _biblioteca_livros:
+        # Usa getattr para obter o valor do atributo dinamicamente
+        if str(getattr(livro, tipo_filtro)) == str(valor_filtro):
+            return f"""
+        Livro encontrado:
+        
+        Livro:  {livro.nome}
+        Gênero: {livro.genero}
+        Autor:  {livro.autor_nome}
+        Ano:    {livro.ano}
+        Valor:  R$ {livro.valor}
+        ID:     {livro.ID}
+        {"-" * 20}"""
+    return f"Livro com {tipo_filtro} '{valor_filtro}' não encontrado."
 
 # Função para exibir o menu
 def show_menu():
@@ -80,7 +103,7 @@ def show_menu():
         Menu Livraria:
         1. Adicionar livros
         2. Listar livros
-        3. Buscar livro por nome
+        3. Buscar livro por filtro
         4. Excluir livro
         0. Sair
         """)
@@ -103,13 +126,33 @@ def menu_livraria():
             # Usa o gerador para listar todos os livros na biblioteca
             for livro in listar_livros(_biblioteca_livros):
                 print(livro)
-        elif input_menu == "3":  # Buscar livro por filtros
-            # Função a ser implementada para buscar um livro específico por algum filtro: nome/genero/autor/ano/ID
-            pass
+        elif input_menu == "3":  # Buscar livro por filtro
+            # Solicita o tipo de filtro e o valor para buscar o livro
+            print(f"1- ID | 2- Nome | 3- Gênero | 4- Autor | 5- Ano | 6- Valor")
+            tipo_filtro = input("Defina o filtro: ")
+            if tipo_filtro == "1":
+                tipo_filtro = "ID"
+            elif tipo_filtro == "2":
+                tipo_filtro = "nome"
+            elif tipo_filtro == "3":
+                tipo_filtro = "genero"
+            elif tipo_filtro == "4":
+                tipo_filtro = "autor_nome"
+            elif tipo_filtro == "5":
+                tipo_filtro = "ano"
+            elif tipo_filtro == "6":
+                tipo_filtro = "valor"
+            else:
+                print("\n@@@ Opção inválida, por favor selecione novamente. @@@")
+                continue
+            
+            valor_filtro = input(f"Insira o {tipo_filtro} do livro que deseja buscar: ")
+            resultado = buscar_livro_por_filtro(tipo_filtro, valor_filtro)
+            print(resultado)
         elif input_menu == "4":  # Excluir livro
-            # Solicita o nome do livro a ser excluído
-            nome = input("Digite o nome do livro que deseja excluir: ")
-            excluir_livro(nome)
+            # Solicita o ID do livro a ser excluído
+            ID = input("Digite o ID do livro que deseja excluir: ")
+            excluir_livro(ID)
         elif input_menu == "0":  # Sair
             # Encerra o loop e sai do menu
             break
@@ -119,7 +162,3 @@ def menu_livraria():
 
 # Inicia o menu da livraria
 menu_livraria()
-
-# OBS: Adicionar função que ao ADD um livro gera um ID unico para ele.
-# Adicionar função para buscar um livro específico por algum filtro: nome/genero/autor/ano/ID
-# Mudar menu de exclusão para pedir ID ao invés de nome
