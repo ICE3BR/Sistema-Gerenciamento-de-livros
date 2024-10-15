@@ -86,7 +86,6 @@ def buscar_livro_por_filtro(tipo_filtro, valor_filtro):
         if str(getattr(livro, tipo_filtro)) == str(valor_filtro):
             return f"""
         Livro encontrado:
-        
         Livro:  {livro.nome}
         Gênero: {livro.genero}
         Autor:  {livro.autor_nome}
@@ -129,20 +128,17 @@ def menu_livraria():
         elif input_menu == "3":  # Buscar livro por filtro
             # Solicita o tipo de filtro e o valor para buscar o livro
             print(f"1- ID | 2- Nome | 3- Gênero | 4- Autor | 5- Ano | 6- Valor")
-            tipo_filtro = input("Defina o filtro: ")
-            if tipo_filtro == "1":
-                tipo_filtro = "ID"
-            elif tipo_filtro == "2":
-                tipo_filtro = "nome"
-            elif tipo_filtro == "3":
-                tipo_filtro = "genero"
-            elif tipo_filtro == "4":
-                tipo_filtro = "autor_nome"
-            elif tipo_filtro == "5":
-                tipo_filtro = "ano"
-            elif tipo_filtro == "6":
-                tipo_filtro = "valor"
-            else:
+            tipo_filtro_input = input("Defina o filtro: ")
+            try:
+                tipo_filtro = {
+                    "1": "ID",
+                    "2": "nome",
+                    "3": "genero",
+                    "4": "autor_nome",
+                    "5": "ano",
+                    "6": "valor"
+                }[tipo_filtro_input]
+            except KeyError:
                 print("\n@@@ Opção inválida, por favor selecione novamente. @@@")
                 continue
             
